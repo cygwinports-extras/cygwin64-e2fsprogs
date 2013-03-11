@@ -1,0 +1,47 @@
+CROSS_HOST="x86_64-pc-cygwin"
+inherit cross
+
+NAME="cygwin64-e2fsprogs"
+VERSION=1.42.7
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="Ext2/3/4 filesystem libraries for Cygwin 64bit toolchain"
+DESCRIPTION="This package contains all of the standard utilities for creating,
+fixing, configuring, and debugging ext2/3/4 filesystems."
+HOMEPAGE="http://e2fsprogs.sourceforge.net/"
+SRC_URI="mirror://sourceforge/e2fsprogs/e2fsprogs-${VERSION}.tar.gz"
+SRC_DIR="e2fsprogs-${VERSION}"
+PATCH_URI="
+	1.41.6-shared-libs.patch
+	1.42.6-cygwin-getsize.patch
+"
+
+DISTCLEANFILES="lib/Makefile.cygwin-lib"
+
+CYGCONF_ARGS="
+	--enable-elf-shlibs
+	--disable-bsd-shlibs
+	--disable-profile
+	--disable-checker
+	--disable-e2initrd-helper
+	--disable-jbd-debug
+	--disable-blkid-debug
+	--disable-testio-debug
+	--disable-libblkid
+	--disable-libuuid
+	--disable-uuidd
+"
+
+src_compile() {
+	cd ${S}
+	cygautoreconf
+	cd ${B}
+	cygconf
+	cygmake libs
+}
+
+src_install() {
+	cd ${B}
+	cygmake -j1 install-libs DESTDIR=${D} LN="\$(LN_S)"
+	rm -fr ${D}${CROSS_DATADIR}/man/
+}
